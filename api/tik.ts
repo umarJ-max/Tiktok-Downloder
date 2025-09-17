@@ -23,26 +23,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const encodedUrl = encodeURIComponent(url);
-    const apiUrl = `https://batgpt.vercel.app/api/tik?url=${encodedUrl}`;
-    
-    const response = await fetch(apiUrl, {
+    const response = await fetch('https://www.tikwm.com/api/', {
+      method: 'POST',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `url=${encodeURIComponent(url)}&hd=1`
     });
-    
-    if (!response.ok) {
-      return res.status(500).json({
+
+    const data = await response.json();
+
+    if (data.code !== 0) {
+      return res.status(400).json({
         success: false,
-        message: 'TikTok service unavailable'
+        message: 'Failed to process video'
       });
     }
 
-    const data = await response.json();
-    res.json(data);
+    res.json({
+      success: true,
+      title: data.data.title,
+      author: data.data.author.nickname,
+      video: data.data.hdplay || data.data.play,
+      thumbnail: data.data.cover,
+      duration: data.data.duration
+    });
   } catch (error) {
-    console.error('TikTok API proxy error:', error);
+    console.error('TikTok API error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to process TikTok URL'
