@@ -42,11 +42,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.json({
       success: true,
-      title: data.data.title,
-      author: data.data.author.nickname,
-      video: data.data.hdplay || data.data.play,
-      thumbnail: data.data.cover,
-      duration: data.data.duration
+      links: [data.data.hdplay || data.data.play],
+      note: 'Video downloaded successfully',
+      videoInfo: {
+        title: data.data.title,
+        videoUrl: data.data.hdplay || data.data.play,
+        coverImage: data.data.cover,
+        musicUrl: data.data.music || ''
+      }
     });
   } catch (error) {
     console.error('TikTok API error:', error);
