@@ -23,34 +23,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Resolve mobile short URLs to full TikTok URLs
+    // For mobile URLs, use a different approach
     let finalUrl = url;
     if (url.includes('vt.tiktok.com') || url.includes('vm.tiktok.com')) {
       try {
         const redirectResponse = await fetch(url, { 
-          method: 'HEAD',
-          redirect: 'follow'
+          redirect: 'follow',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
+          }
         });
         finalUrl = redirectResponse.url;
-      } catch {
-        // If redirect fails, try with original URL
+        console.log('Resolved URL:', finalUrl);
+      } catch (error) {
+        console.log('Redirect failed:', error);
         finalUrl = url;
       }
     }
 
     const encodedUrl = encodeURIComponent(finalUrl);
     const apiUrl = `https://batgpt.vercel.app/api/tik?url=${encodedUrl}`;
+    console.log('API URL:', apiUrl);
     
     const response = await fetch(apiUrl);
     const text = await response.text();
+    console.log('API Response:', text.substring(0, 200));
     
     let data;
     try {
       data = JSON.parse(text);
-    } catch {
+    } catch (parseError) {
+      console.log('JSON Parse Error:', parseError);
       return res.status(500).json({
         success: false,
-        message: 'Invalid response from TikTok service'
+        message: `Parse error: ${text.substring(0, 100)}`
       });
     }
 
