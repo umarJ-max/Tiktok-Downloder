@@ -1,4 +1,4 @@
-const API_BASE = 'https://batgpt.vercel.app/api/tik?url=';
+const API_BASE = '/api/tik?url=';
 
 export interface VideoData {
   success: boolean;
