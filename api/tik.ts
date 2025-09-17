@@ -23,44 +23,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Resolve short URLs to get the actual TikTok URL
-    let finalUrl = url;
-    if (url.includes('vt.tiktok.com') || url.includes('vm.tiktok.com')) {
-      const redirectResponse = await fetch(url, { redirect: 'follow' });
-      finalUrl = redirectResponse.url;
-    }
-
-    const encodedUrl = encodeURIComponent(finalUrl);
-    const apiUrl = `https://batgpt.vercel.app/api/tik?url=${encodedUrl}`;
+    const apiUrl = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
     
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
     
-    if (!response.ok) {
-      return res.status(response.status).json({
+    const data = await response.json();
+
+    if (data.code !== 0) {
+      return res.status(400).json({
         success: false,
-        message: 'Failed to process video'
+        message: data.msg || 'Failed to process video'
       });
     }
 
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return res.status(500).json({
-        success: false,
-        message: 'Invalid response from TikTok service'
-      });
-    }
-
-    try {
-      const data = await response.json();
-      res.json(data);
-    } catch (parseError) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to parse response from TikTok service'
-      });
-    }
+    res.json({
+      success: true,
+      data: {
+        title: data.data.title,
+        author: data.data.author.nickname,
+        video: data.data.play,
+        thumbnail: data.data.cover,
+        duration: data.data.duration
+      }
+    });
   } catch (error) {
-    console.error('TikTok API proxy error:', error);
+    console.error('TikTok API error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error while processing video'
