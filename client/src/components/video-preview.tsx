@@ -60,27 +60,26 @@ export default function VideoPreview({ videoData, onDownload }: VideoPreviewProp
             {/* Download Options */}
             <div className="space-y-3">
               <div data-testid="download-options" className="space-y-2">
-                {videoData.links.map((link, index) => {
-                  const label = index === 0 ? "Download HD (No Watermark)" : `Download Option ${index + 1}`;
-                  const isPrimary = index === 0;
-                  
-                  return (
-                    <Button
-                      key={index}
-                      data-testid={`button-download-option-${index}`}
-                      onClick={() => onDownload(link, label)}
-                      className={`w-full px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
-                        isPrimary 
-                          ? 'download-btn text-primary-foreground' 
-                          : 'bg-secondary text-secondary-foreground hover:bg-opacity-80'
-                      }`}
-                      variant={isPrimary ? "default" : "secondary"}
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>{label}</span>
-                    </Button>
-                  );
-                })}
+                <Button
+                  data-testid="button-download-option-0"
+                  onClick={() => onDownload(videoData.videoInfo.videoUrl, "Download Video (Direct)")}
+                  className="w-full px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2 download-btn text-primary-foreground"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Video (Direct)</span>
+                </Button>
+                
+                {videoData.videoInfo.musicUrl && (
+                  <Button
+                    data-testid="button-download-option-1" 
+                    onClick={() => onDownload(videoData.videoInfo.musicUrl, "Download Audio")}
+                    className="w-full px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2 bg-secondary text-secondary-foreground hover:bg-opacity-80"
+                    variant="secondary"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download Audio</span>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

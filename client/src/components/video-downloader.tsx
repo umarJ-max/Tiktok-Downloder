@@ -81,8 +81,8 @@ export default function VideoDownloader() {
         </div>
         
         <form onSubmit={handleSubmit}>
-          <div className="gradient-border">
-            <div className="relative">
+          <div className="space-y-4">
+            <div className="gradient-border">
               <Input
                 data-testid="input-video-url"
                 type="url"
@@ -94,22 +94,22 @@ export default function VideoDownloader() {
                 placeholder="Paste TikTok video URL here..."
                 className="w-full px-4 py-4 bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring rounded-lg border-0"
               />
-              <Button
-                data-testid="button-download"
-                type="submit"
-                disabled={mutation.isPending}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 download-btn text-primary-foreground px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
-              >
-                {mutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "Download"
-                )}
-              </Button>
             </div>
+            <Button
+              data-testid="button-download"
+              type="submit"
+              disabled={mutation.isPending}
+              className="w-full download-btn text-primary-foreground px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+            >
+              {mutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Get Video"
+              )}
+            </Button>
           </div>
         </form>
         
