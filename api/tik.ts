@@ -34,16 +34,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiUrl = `https://batgpt.vercel.app/api/tik?url=${encodedUrl}`;
     
     const response = await fetch(apiUrl);
-    const data = await response.json();
-
+    
     if (!response.ok) {
       return res.status(response.status).json({
         success: false,
-        message: data.message || 'Failed to process video'
+        message: 'Failed to process video'
       });
     }
 
-    res.json(data);
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return res.status(500).json({
+        success: false,
+        message: 'Invalid response from TikTok service'
+      });
+    }
+
+    try {
+      const data = await response.json();
+      res.json(data);
+    } catch (parseError) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to parse response from TikTok service'
+      });
+    }
   } catch (error) {
     console.error('TikTok API proxy error:', error);
     res.status(500).json({
