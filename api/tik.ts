@@ -23,35 +23,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const apiUrl = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
-    
-    const response = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    // Resolve mobile short URLs to full TikTok URLs
+    let finalUrl = url;
+    if (url.includes('vt.tiktok.com') || url.includes('vm.tiktok.com')) {
+      try {
+        const redirectResponse = await fetch(url, { 
+          method: 'HEAD',
+          redirect: 'follow'
+        });
+        finalUrl = redirectResponse.url;
+      } catch {
+        // If redirect fails, try with original URL
+        finalUrl = url;
       }
-    });
-    
-    const data = await response.json();
+    }
 
-    if (data.code !== 0) {
-      return res.status(400).json({
+    const encodedUrl = encodeURIComponent(finalUrl);
+    const apiUrl = `https://batgpt.vercel.app/api/tik?url=${encodedUrl}`;
+    
+    const response = await fetch(apiUrl);
+    const text = await response.text();
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(500).json({
         success: false,
-        message: data.msg || 'Failed to process video'
+        message: 'Invalid response from TikTok service'
       });
     }
 
-    res.json({
-      success: true,
-      data: {
-        title: data.data.title,
-        author: data.data.author.nickname,
-        video: data.data.play,
-        thumbnail: data.data.cover,
-        duration: data.data.duration
-      }
-    });
+    if (!response.ok) {
+      return res.status(response.status).json({
+        success: false,
+        message: data.message || 'Failed to process video'
+      });
+    }
+
+    res.json(data);
   } catch (error) {
-    console.error('TikTok API error:', error);
+    console.error('TikTok API proxy error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error while processing video'
