@@ -18,9 +18,22 @@ export async function fetchVideoData(url: string): Promise<VideoData> {
     const apiUrl = `${API_BASE}${encodedUrl}`;
     
     const response = await fetch(apiUrl);
-    const data = await response.json();
     
-    if (!response.ok || !data.success) {
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`API Error: ${response.status} - ${text.substring(0, 100)}`);
+    }
+    
+    const text = await response.text();
+    let data;
+    
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+    }
+    
+    if (!data.success) {
       throw new Error(data.message || 'Failed to process video');
     }
     
