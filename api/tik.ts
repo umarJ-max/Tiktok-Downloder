@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const tiktokRegex = /^https?:\/\/(www\.)?(tiktok\.com|vm\.tiktok\.com)\/.+/i;
+    const tiktokRegex = /^https?:\/\/(www\.)?(tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com|m\.tiktok\.com)\/.+/i;
     if (!tiktokRegex.test(url)) {
       return res.status(400).json({
         success: false,
@@ -23,7 +23,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const encodedUrl = encodeURIComponent(url);
+    // Resolve short URLs to get the actual TikTok URL
+    let finalUrl = url;
+    if (url.includes('vt.tiktok.com') || url.includes('vm.tiktok.com')) {
+      const redirectResponse = await fetch(url, { redirect: 'follow' });
+      finalUrl = redirectResponse.url;
+    }
+
+    const encodedUrl = encodeURIComponent(finalUrl);
     const apiUrl = `https://batgpt.vercel.app/api/tik?url=${encodedUrl}`;
     
     const response = await fetch(apiUrl);
